@@ -77,10 +77,18 @@ const journalSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    image: {
+      type: String,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['Pending Review', 'Under Review', 'Reviewed', 'Processed', 'Approved', 'Rejected', 'Published'],
       default: 'Pending Review',
+    },
+    publishDate: {
+      type: Date,
+      default: null,
     },
     assignedReviewer: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,4 +1,5 @@
 import Announcement from '../models/Announcement.js';
+import mongoose from 'mongoose';
 
 export const getAllAnnouncements = async (req, res) => {
   try {
@@ -21,6 +22,7 @@ export const createAnnouncement = async (req, res) => {
       title,
       category,
       expiryDate,
+      mediaPath: req.file ? req.file.path.replace(/\\/g, '/') : '',
       status: status || 'Draft',
       publishDate: status === 'Published' ? new Date() : null
     });
@@ -35,6 +37,10 @@ export const updateAnnouncement = async (req, res) => {
   try {
     const { title, category, expiryDate, status } = req.body;
     const updateData = { title, category, expiryDate, status };
+    
+    if (req.file) {
+      updateData.mediaPath = req.file.path.replace(/\\/g, '/');
+    }
     
     if (status === 'Published') {
       updateData.publishDate = new Date();
@@ -60,5 +66,29 @@ export const deleteAnnouncement = async (req, res) => {
     res.status(200).json({ message: 'Announcement deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting announcement', error: error.message });
+  }
+};
+
+// Get public announcements
+export const getPublicAnnouncements = async (req, res) => {
+  try {
+    const announcements = await Announcement.find({ status: 'Published' }).sort({ publishDate: -1, createdAt: -1 });
+    res.status(200).json(announcements);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching public announcements', error: error.message });
+  }
+};
+
+export const getPublicAnnouncementById = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid announcement ID format' });
+    }
+    const announcement = await Announcement.findOne({ _id: req.params.id, status: 'Published' });
+    if (!announcement) return res.status(404).json({ message: 'Announcement not found' });
+    res.status(200).json(announcement);
+  } catch (error) {
+    console.error('Error in getPublicAnnouncementById:', error);
+    res.status(500).json({ message: 'Error fetching public announcement', error: error.message });
   }
 };

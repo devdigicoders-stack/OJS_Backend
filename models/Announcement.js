@@ -34,6 +34,10 @@ const announcementSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    mediaPath: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true }
 );

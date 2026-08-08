@@ -9,11 +9,38 @@ export const getDashboardStats = async (req, res) => {
     const pendingReviews = await Journal.countDocuments({ status: 'Pending Review' });
     const publishedJournals = await Journal.countDocuments({ status: 'Published' });
     
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const usersThisMonth = await User.countDocuments({ createdAt: { $gte: startOfThisMonth } });
+    const usersLastMonth = await User.countDocuments({ createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } });
+    
+    const journalsThisMonth = await Journal.countDocuments({ createdAt: { $gte: startOfThisMonth } });
+    const journalsLastMonth = await Journal.countDocuments({ createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } });
+
+    const pendingThisMonth = await Journal.countDocuments({ status: 'Pending Review', createdAt: { $gte: startOfThisMonth } });
+    const pendingLastMonth = await Journal.countDocuments({ status: 'Pending Review', createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } });
+
+    const publishedThisMonth = await Journal.countDocuments({ status: 'Published', createdAt: { $gte: startOfThisMonth } });
+    const publishedLastMonth = await Journal.countDocuments({ status: 'Published', createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth } });
+
+    const calculatePercentage = (current, previous) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Number(((current - previous) / previous * 100).toFixed(1));
+    };
+
     res.status(200).json({
       totalUsers,
       totalJournals,
       pendingReviews,
-      publishedJournals
+      publishedJournals,
+      trends: {
+        users: calculatePercentage(usersThisMonth, usersLastMonth),
+        journals: calculatePercentage(journalsThisMonth, journalsLastMonth),
+        pending: calculatePercentage(pendingThisMonth, pendingLastMonth),
+        published: calculatePercentage(publishedThisMonth, publishedLastMonth)
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching dashboard stats', error: error.message });
@@ -91,5 +118,27 @@ export const getSubmissionsChartData = async (req, res) => {
     res.status(200).json(chartData);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching submissions chart data', error: error.message });
+  }
+};
+
+// Get public stats for website
+export const getPublicStats = async (req, res) => {
+  try {
+    const totalJournals = await Journal.countDocuments({ status: 'Published' });
+    const totalAuthors = await User.countDocuments({ role: 'Author' });
+    
+    // Using distinct to get unique departments that actually have published journals
+    const departmentsList = await Journal.distinct('department', { status: 'Published' });
+    const totalDepartments = departmentsList.length;
+
+    const stats = {
+      totalJournals,
+      totalAuthors,
+      totalDepartments,
+    };
+
+    res.status(200).json(stats);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching public stats', error: error.message });
   }
 };

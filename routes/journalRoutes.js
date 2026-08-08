@@ -1,22 +1,28 @@
 import express from 'express';
-import { 
-  getAllJournals, 
-  getJournalById, 
-  updateJournalStatus, 
+import {
+  getAllJournals,
+  getJournalById,
+  updateJournalStatus,
   bulkUpdateJournalStatus,
-  assignReviewer, 
-  publishJournal, 
-  uploadJournal, 
+  assignReviewer,
+  publishJournal,
+  uploadJournal,
   getMySubmissions,
-  getMyStats
+  getMyStats,
+  getPublicJournals,
+  getPublicJournalById
 } from '../controllers/journalController.js';
 import { protectAdmin, protectUser } from '../middleware/authMiddleware.js';
 import { uploadManuscriptMiddleware } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
+// Public routes for website
+router.get('/public', getPublicJournals);
+router.get('/public/:id', getPublicJournalById);
+
 // Author routes (using protectUser)
-router.post('/upload', protectUser, uploadManuscriptMiddleware.single('mainFile'), uploadJournal);
+router.post('/upload', protectUser, uploadManuscriptMiddleware.fields([{ name: 'mainFile', maxCount: 1 }, { name: 'image', maxCount: 1 }, { name: 'additionalFiles', maxCount: 5 }]), uploadJournal);
 router.get('/my-submissions', protectUser, getMySubmissions);
 router.get('/my-stats', protectUser, getMyStats);
 

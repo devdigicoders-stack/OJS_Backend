@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({ exposedHeaders: ['Content-Length'] }));
 app.use(express.json());
 
 // Serve static files
@@ -43,7 +43,7 @@ import settingsRoutes from './routes/settingsRoutes.js';
 
 // Basic Route for testing
 app.get('/', (req, res) => {
-  res.send('OJS Backend API is running!');
+  res.send('Praxis Backend API is running!');
 });
 
 // API Routes
