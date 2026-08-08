@@ -59,6 +59,24 @@ export const updateAnnouncement = async (req, res) => {
   }
 };
 
+export const toggleAnnouncementStatus = async (req, res) => {
+  try {
+    const announcement = await Announcement.findById(req.params.id);
+    if (!announcement) return res.status(404).json({ message: 'Announcement not found' });
+    
+    // Toggle between Published and Draft
+    announcement.status = announcement.status === 'Published' ? 'Draft' : 'Published';
+    if (announcement.status === 'Published' && !announcement.publishDate) {
+      announcement.publishDate = new Date();
+    }
+    await announcement.save();
+    
+    res.status(200).json({ message: `Announcement marked as ${announcement.status}`, status: announcement.status });
+  } catch (error) {
+    res.status(500).json({ message: 'Error toggling announcement status', error: error.message });
+  }
+};
+
 export const deleteAnnouncement = async (req, res) => {
   try {
     const announcement = await Announcement.findByIdAndDelete(req.params.id);
