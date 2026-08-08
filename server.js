@@ -66,6 +66,14 @@ app.use('/api/about-page', aboutPageRoutes);
 app.use('/api/home-page', homePageRoutes);
 app.use('/api/reviews', reviewRoutes);
 
+// Global Error Handler to return JSON instead of HTML
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+  });
+});
+
 // Start Server
 connectDB().then(() => {
   app.listen(PORT, () => {

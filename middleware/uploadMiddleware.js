@@ -74,12 +74,12 @@ const manuscriptFileFilter = (req, file, cb) => {
     }
   } else {
     // additionalFiles
-    const allowedFileTypes = /pdf|doc|docx|xls|xlsx|csv|zip|rar|png|jpg|jpeg|webp/;
+    const allowedFileTypes = /pdf|doc|docx|xls|xlsx|csv|zip|rar|png|jpg|jpeg|webp|txt|rtf|ppt|pptx|mp4|webm|avi/;
     const extname = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
     if (extname) {
       return cb(null, true);
     } else {
-      cb(new Error('Invalid file format for additional files!'));
+      cb(new Error(`Invalid file format for additional files! Got: ${file.originalname}`));
     }
   }
 };
@@ -121,4 +121,36 @@ export const uploadAnnouncementMiddleware = multer({
   storage: announcementStorage,
   fileFilter: announcementFileFilter,
   limits: { fileSize: 1024 * 1024 * 10 } // 10MB limit
+});
+
+// Configure multer storage for hero media (videos and images)
+const heroStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = 'uploads/hero';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'hero-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const heroFileFilter = (req, file, cb) => {
+  const allowedFileTypes = /jpeg|jpg|png|webp|mp4|webm|ogg/;
+  const extname = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
+  
+  if (extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only images and videos are allowed for hero section!'));
+  }
+};
+
+export const uploadHeroMediaMiddleware = multer({
+  storage: heroStorage,
+  fileFilter: heroFileFilter,
+  limits: { fileSize: 1024 * 1024 * 50 } // 50MB limit for videos
 });
