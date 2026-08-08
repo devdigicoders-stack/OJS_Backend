@@ -222,7 +222,18 @@ export const getMyStats = async (req, res) => {
       rejected: journals.filter(j => j.status === 'Rejected').length,
     };
 
-    res.status(200).json(stats);
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const monthlyStats = Array.from({ length: 12 }, (_, i) => ({ name: monthNames[i], count: 0 }));
+
+    journals.forEach(j => {
+      const date = new Date(j.createdAt);
+      if (!isNaN(date)) {
+        const month = date.getMonth();
+        monthlyStats[month].count += 1;
+      }
+    });
+
+    res.status(200).json({ ...stats, monthlyStats });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching stats', error: error.message });
   }
@@ -272,3 +283,43 @@ export const getPublicJournalById = async (req, res) => {
   }
 };
 
+// Reviewer - Submit Review (Reviewed or Rejected)
+export const submitReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, reviewerFeedback } = req.body;
+    const userId = req.user._id;
+
+    if (req.user.role !== 'Reviewer') {
+      return res.status(403).json({ message: 'Only reviewers can submit reviews' });
+    }
+
+    if (!['Reviewed', 'Rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status update by reviewer' });
+    }
+
+    const journal = await Journal.findById(id);
+    if (!journal) {
+      return res.status(404).json({ message: 'Journal not found' });
+    }
+
+    // Verify the user is the assigned reviewer
+    if (journal.assignedReviewer.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'You are not assigned to review this journal' });
+    }
+
+    // A journal can only be reviewed if it is currently 'Under Review'
+    if (journal.status !== 'Under Review') {
+      return res.status(400).json({ message: 'This journal is not in Under Review status' });
+    }
+
+    journal.status = status;
+    journal.reviewerFeedback = reviewerFeedback || '';
+    
+    await journal.save();
+
+    res.status(200).json({ message: 'Review submitted successfully', journal });
+  } catch (error) {
+    res.status(500).json({ message: 'Error submitting review', error: error.message });
+  }
+};

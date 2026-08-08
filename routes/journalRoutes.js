@@ -10,7 +10,8 @@ import {
   getMySubmissions,
   getMyStats,
   getPublicJournals,
-  getPublicJournalById
+  getPublicJournalById,
+  submitReview
 } from '../controllers/journalController.js';
 import { protectAdmin, protectUser } from '../middleware/authMiddleware.js';
 import { uploadManuscriptMiddleware } from '../middleware/uploadMiddleware.js';
@@ -25,6 +26,7 @@ router.get('/public/:id', getPublicJournalById);
 router.post('/upload', protectUser, uploadManuscriptMiddleware.fields([{ name: 'mainFile', maxCount: 1 }, { name: 'image', maxCount: 1 }, { name: 'additionalFiles', maxCount: 5 }]), uploadJournal);
 router.get('/my-submissions', protectUser, getMySubmissions);
 router.get('/my-stats', protectUser, getMyStats);
+router.put('/:id/review', protectUser, submitReview);
 
 // Admin / Reviewer routes (using protectAdmin)
 router.get('/', protectAdmin, getAllJournals);
