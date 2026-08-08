@@ -40,6 +40,12 @@ import journalRoutes from './routes/journalRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import faqRoutes from './routes/faqRoutes.js';
+import enquiryRoutes from './routes/enquiryRoutes.js';
+import journalPageRoutes from './routes/journalPageRoutes.js';
+import aboutPageRoutes from './routes/aboutPageRoutes.js';
+import homePageRoutes from './routes/homePageRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 // Basic Route for testing
 app.get('/', (req, res) => {
@@ -53,6 +59,12 @@ app.use('/api/journals', journalRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/journal-pages', journalPageRoutes);
+app.use('/api/about-page', aboutPageRoutes);
+app.use('/api/home-page', homePageRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Start Server
 connectDB().then(() => {
