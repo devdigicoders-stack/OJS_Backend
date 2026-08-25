@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const HomePageSchema = new mongoose.Schema({
   hero: {
-    title: { type: String, default: 'Journal of society, behaviour and institutions' },
+    title: { type: String, default: 'Praxis Journal of Society, Behaviour and Institutional Studies' },
     subtitle: { type: String, default: 'A premium academic publishing platform dedicated to sharing high-impact knowledge globally through rigorous peer review.' },
     badge: { type: String, default: 'Empowering Global Scientific Research' },
     primaryButtonText: { type: String, default: 'Submit Manuscript' },

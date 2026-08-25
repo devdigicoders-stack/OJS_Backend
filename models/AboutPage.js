@@ -19,6 +19,11 @@ const AboutPageSchema = new mongoose.Schema({
     role: { type: String, required: true },
     img: { type: String, default: '' }
   }],
+  reviewerTeam: [{
+    name: { type: String, required: true },
+    role: { type: String, required: true },
+    img: { type: String, default: '' }
+  }],
   processSteps: [{ type: String }],
   stats: [{
     label: { type: String, required: true },
