@@ -12,17 +12,27 @@ export const getSettings = async (req, res) => {
   }
 };
 
+export const getPublicSettings = async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) settings = await Settings.create({});
+    res.status(200).json({ issn: settings.issn, bankName: settings.bankName, accountName: settings.accountName, accountNumber: settings.accountNumber, ifscCode: settings.ifscCode, upiId: settings.upiId });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching settings', error: error.message });
+  }
+};
+
 export const updateSettings = async (req, res) => {
   try {
-    const { siteName, supportEmail, allowRegistrations, maintenanceMode } = req.body;
+    const { siteName, supportEmail, issn, bankName, accountName, accountNumber, ifscCode, upiId, allowRegistrations, maintenanceMode } = req.body;
     let settings = await Settings.findOne();
     
     if (!settings) {
-      settings = await Settings.create({ siteName, supportEmail, allowRegistrations, maintenanceMode });
+      settings = await Settings.create({ siteName, supportEmail, issn, bankName, accountName, accountNumber, ifscCode, upiId, allowRegistrations, maintenanceMode });
     } else {
       settings = await Settings.findByIdAndUpdate(
         settings._id,
-        { siteName, supportEmail, allowRegistrations, maintenanceMode },
+        { siteName, supportEmail, issn, bankName, accountName, accountNumber, ifscCode, upiId, allowRegistrations, maintenanceMode },
         { new: true, runValidators: true }
       );
     }
