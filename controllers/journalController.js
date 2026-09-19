@@ -131,7 +131,8 @@ export const uploadJournal = async (req, res) => {
   try {
     const {
       title, abstract, department, researchArea, keywords,
-      pages, primaryAuthorName, email, phone, phoneCode, coAuthors, isSameAuthor
+      pages, primaryAuthorName, email, phone, phoneCode, coAuthors, isSameAuthor,
+      status, volume, issue, doi
     } = req.body;
 
     // Check if file was uploaded
@@ -139,12 +140,36 @@ export const uploadJournal = async (req, res) => {
       return res.status(400).json({ message: 'Manuscript file (mainFile) is required' });
     }
 
-    // Auto-generate Journal ID (simple logic for now)
+    // Determine primary author ID
+    let authorId;
+    if (req.user) {
+      authorId = req.user._id;
+    } else if (req.admin) {
+      // Find or create an author user based on email
+      let author = await User.findOne({ email });
+      if (!author) {
+        author = await User.create({
+          name: primaryAuthorName || 'Author',
+          email: email || `author_${Date.now()}@praxis.org.in`,
+          password: 'Password@123',
+          role: 'Author',
+          status: 'Active',
+          department: department || ''
+        });
+      }
+      authorId = author._id;
+    }
+
+    if (!authorId) {
+      return res.status(400).json({ message: 'Author identification failed' });
+    }
+
+    // Auto-generate Journal ID
     const count = await Journal.countDocuments();
     const currentYear = new Date().getFullYear();
     const journalId = `J-${currentYear}-${(count + 1).toString().padStart(3, '0')}`;
 
-    const parsedKeywords = typeof keywords === 'string' ? JSON.parse(keywords) : keywords;
+    const parsedKeywords = typeof keywords === 'string' ? JSON.parse(keywords) : (keywords || []);
     const parsedIsSameAuthor = typeof isSameAuthor === 'string' ? isSameAuthor === 'true' : isSameAuthor;
 
     const journal = await Journal.create({
@@ -153,20 +178,23 @@ export const uploadJournal = async (req, res) => {
       abstract,
       department,
       researchArea,
-      keywords: parsedKeywords,
-      pages,
+      keywords: parsedKeywords || [],
+      pages: Number(pages) || 1,
       primaryAuthorName,
       email,
-      phone,
-      phoneCode,
-      coAuthors,
+      phone: phone || '',
+      phoneCode: phoneCode || '+91',
+      coAuthors: coAuthors || '',
       isSameAuthor: parsedIsSameAuthor,
-      primaryAuthorId: req.user._id,
-      mainFilePath: req.files['mainFile'][0].path, // Use actual file path from Multer
+      primaryAuthorId: authorId,
+      mainFilePath: req.files['mainFile'][0].path,
       originalFileName: req.files['mainFile'][0].originalname,
       image: req.files['image'] && req.files['image'].length > 0 ? req.files['image'][0].path : '',
       additionalFilePaths: req.files['additionalFiles'] ? req.files['additionalFiles'].map(f => f.path) : [],
-      status: 'Pending Review'
+      status: status || 'Pending Review',
+      volume: volume || '-',
+      issue: issue || '-',
+      doi: doi || '-'
     });
 
     res.status(201).json(journal);

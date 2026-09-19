@@ -13,7 +13,7 @@ import {
   getPublicJournalById,
   submitReview
 } from '../controllers/journalController.js';
-import { protectAdmin, protectUser } from '../middleware/authMiddleware.js';
+import { protectAdmin, protectUser, protectAdminOrUser } from '../middleware/authMiddleware.js';
 import { uploadManuscriptMiddleware } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
@@ -22,8 +22,8 @@ const router = express.Router();
 router.get('/public', getPublicJournals);
 router.get('/public/:id', getPublicJournalById);
 
-// Author routes (using protectUser)
-router.post('/upload', protectUser, uploadManuscriptMiddleware.fields([{ name: 'mainFile', maxCount: 1 }, { name: 'image', maxCount: 1 }, { name: 'additionalFiles', maxCount: 5 }]), uploadJournal);
+// Author / Admin upload route
+router.post('/upload', protectAdminOrUser, uploadManuscriptMiddleware.fields([{ name: 'mainFile', maxCount: 1 }, { name: 'image', maxCount: 1 }, { name: 'additionalFiles', maxCount: 5 }]), uploadJournal);
 router.get('/my-submissions', protectUser, getMySubmissions);
 router.get('/my-stats', protectUser, getMyStats);
 router.put('/:id/review', protectUser, submitReview);

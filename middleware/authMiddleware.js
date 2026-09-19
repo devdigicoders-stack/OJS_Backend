@@ -59,3 +59,38 @@ export const protectUser = async (req, res, next) => {
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
+
+// Protect Routes for both Admin or User
+export const protectAdminOrUser = async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+
+      // Check if Admin
+      const admin = await Admin.findById(decoded.id).select('-password');
+      if (admin && admin.status === 'Active') {
+        req.admin = admin;
+        return next();
+      }
+
+      // Check if User
+      const user = await User.findById(decoded.id).select('-password');
+      if (user && user.status === 'Active') {
+        req.user = user;
+        return next();
+      }
+
+      return res.status(401).json({ message: 'Not authorized, account not found or inactive' });
+    } catch (error) {
+      return res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+};
+
