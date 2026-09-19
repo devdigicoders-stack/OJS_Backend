@@ -25,7 +25,7 @@ export const getAllUsers = async (req, res) => {
 // Get single user
 export const getReviewers = async (req, res) => {
   try {
-    const reviewers = await User.find({ role: 'Reviewer' }).sort({ createdAt: -1 });
+    const reviewers = await User.find({ role: { $regex: /^reviewer$/i } }).sort({ createdAt: -1 });
     res.status(200).json(reviewers);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching reviewers', error: error.message });
