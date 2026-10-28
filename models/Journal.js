@@ -111,6 +111,14 @@ const journalSchema = new mongoose.Schema(
       type: String,
       default: '-',
     },
+    publicationYear: {
+      type: String,
+      default: '',
+    },
+    publicationMonth: {
+      type: String,
+      default: '',
+    },
     views: {
       type: Number,
       default: 0,

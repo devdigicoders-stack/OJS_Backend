@@ -44,10 +44,14 @@ export const getJournalById = async (req, res) => {
 // Update Journal Status
 export const updateJournalStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, ...extraData } = req.body;
+    const updatePayload = { status, ...extraData };
+    if (status === 'Published' && !updatePayload.publishDate) {
+      updatePayload.publishDate = new Date();
+    }
     const journal = await Journal.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updatePayload,
       { new: true, runValidators: false }
     );
 
@@ -105,7 +109,7 @@ export const assignReviewer = async (req, res) => {
 // Publish Journal
 export const publishJournal = async (req, res) => {
   try {
-    const { doi, publishDate, volume, issue } = req.body;
+    const { doi, publishDate, volume, issue, publicationYear, publicationMonth } = req.body;
 
     const journal = await Journal.findByIdAndUpdate(
       req.params.id,
@@ -114,7 +118,9 @@ export const publishJournal = async (req, res) => {
         doi,
         publishDate: publishDate || new Date(),
         volume,
-        issue
+        issue,
+        publicationYear,
+        publicationMonth
       },
       { new: true }
     );
@@ -132,7 +138,7 @@ export const uploadJournal = async (req, res) => {
     const {
       title, abstract, department, researchArea, keywords,
       pages, primaryAuthorName, email, phone, phoneCode, coAuthors, isSameAuthor,
-      status, volume, issue, doi
+      status, volume, issue, doi, publicationYear, publicationMonth
     } = req.body;
 
     // Check if file was uploaded
@@ -194,7 +200,9 @@ export const uploadJournal = async (req, res) => {
       status: status || 'Pending Review',
       volume: volume || '-',
       issue: issue || '-',
-      doi: doi || '-'
+      doi: doi || '-',
+      publicationYear: publicationYear || '',
+      publicationMonth: publicationMonth || ''
     });
 
     res.status(201).json(journal);
