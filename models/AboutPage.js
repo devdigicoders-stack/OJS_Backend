@@ -17,12 +17,14 @@ const AboutPageSchema = new mongoose.Schema({
   team: [{
     name: { type: String, required: true },
     role: { type: String, required: true },
-    img: { type: String, default: '' }
+    img: { type: String, default: '' },
+    universityUrl: { type: String, default: '' }
   }],
   reviewerTeam: [{
     name: { type: String, required: true },
     role: { type: String, required: true },
-    img: { type: String, default: '' }
+    img: { type: String, default: '' },
+    universityUrl: { type: String, default: '' }
   }],
   processSteps: [{ type: String }],
   stats: [{
@@ -32,7 +34,8 @@ const AboutPageSchema = new mongoose.Schema({
   editorInChief: {
     name: { type: String, default: 'Prof. John Doe' },
     affiliation: { type: String, default: 'Department of Computer Science, University of Technology' },
-    email: { type: String, default: 'editor@example.com' }
+    email: { type: String, default: 'editor@example.com' },
+    universityUrl: { type: String, default: '' }
   }
 }, {
   timestamps: true
